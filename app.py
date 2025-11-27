@@ -785,68 +785,10 @@ def main():
                 # 스타일링된 테이블 표시
                 st.markdown("#### 회귀계수 (Coefficients)")
                 
-                # HTML 테이블로 변환
-                html_table = """
-                <style>
-                    .reg-table { 
-                        width: 100%; 
-                        border-collapse: collapse; 
-                        font-size: 14px;
-                        margin: 1rem 0;
-                    }
-                    .reg-table th { 
-                        background: #1e3a5f; 
-                        color: white; 
-                        padding: 10px 8px; 
-                        text-align: center;
-                        font-weight: 500;
-                    }
-                    .reg-table td { 
-                        padding: 8px; 
-                        text-align: center; 
-                        border-bottom: 1px solid #e2e8f0;
-                    }
-                    .reg-table tr:hover { background: #f8fafc; }
-                    .reg-table .var-col { 
-                        text-align: left; 
-                        font-weight: 500;
-                        background: #f1f5f9;
-                    }
-                    .sig-note { font-size: 12px; color: #64748b; margin-top: 0.5rem; }
-                </style>
-                <table class="reg-table">
-                <tr>
-                    <th>변수</th>
-                    <th>Q1<br><span style="font-size:10px">자기인식</span></th>
-                    <th>Q2<br><span style="font-size:10px">목표설정</span></th>
-                    <th>Q3<br><span style="font-size:10px">취업자신감</span></th>
-                    <th>Q4<br><span style="font-size:10px">무직업필요</span></th>
-                    <th>Q5<br><span style="font-size:10px">진로준비</span></th>
-                    <th>Q6<br><span style="font-size:10px">인생전망</span></th>
-                    <th>Q7<br><span style="font-size:10px">기회인식</span></th>
-                </tr>
-                """
+                # st.dataframe 사용
+                st.dataframe(summary_df, use_container_width=True, hide_index=True)
                 
-                for _, row in summary_df.iterrows():
-                    html_table += f"<tr><td class='var-col'>{row['변수']}</td>"
-                    for q in ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7']:
-                        val = row.get(q, '')
-                        # 유의한 결과 강조
-                        style = ""
-                        if '*' in str(val):
-                            style = "font-weight:600; color:#1e3a5f;"
-                        html_table += f"<td style='{style}'>{val}</td>"
-                    html_table += "</tr>"
-                
-                html_table += "</table>"
-                html_table += """
-                <p class="sig-note">
-                    유의수준: †p < .10, *p < .05, **p < .01, ***p < .001<br>
-                    성별: 여성=1, 남성=0 (더미코딩)
-                </p>
-                """
-                
-                st.markdown(html_table, unsafe_allow_html=True)
+                st.caption("유의수준: †p < .10, *p < .05, **p < .01, ***p < .001 | 성별: 여성=1, 남성=0 (더미코딩)")
                 
                 # 해석 가이드
                 st.markdown("#### 📝 해석 가이드")
@@ -1092,49 +1034,15 @@ def main():
                 - **요인3 (직업무관심)**: Q4(무직업필요)
                 """)
                 
-                # CFA 결과 테이블
+                # CFA 결과 테이블 - st.dataframe 사용
                 cfa_table = fa_results['cfa']['loading_table']
                 
-                html_cfa = """
-                <style>
-                    .cfa-table { width: 100%; border-collapse: collapse; margin: 1rem 0; }
-                    .cfa-table th { background: #1e3a5f; color: white; padding: 10px; }
-                    .cfa-table td { padding: 10px; border-bottom: 1px solid #e2e8f0; text-align: center; }
-                    .cfa-table .factor-name { font-weight: 600; background: #f1f5f9; }
-                </style>
-                <table class="cfa-table">
-                <tr><th>요인</th><th>문항</th><th>요인적재량</th><th>Cronbach's α</th></tr>
-                """
+                # 데이터프레임으로 변환
+                cfa_df = pd.DataFrame(cfa_table)
+                cfa_df['요인적재량'] = cfa_df['요인적재량'].apply(lambda x: f"{x:.3f}")
+                cfa_df['Cronbach α'] = cfa_df['Cronbach α'].apply(lambda x: f"{x:.3f}" if x else "-")
                 
-                current_factor = None
-                for item in cfa_table:
-                    factor_cell = ""
-                    alpha_cell = ""
-                    
-                    if item['요인'] != current_factor:
-                        current_factor = item['요인']
-                        factor_cell = f"<td class='factor-name' rowspan='1'>{item['요인']}</td>"
-                        alpha = item['Cronbach α']
-                        alpha_str = f"{alpha:.3f}" if alpha else "-"
-                        alpha_cell = f"<td rowspan='1'>{alpha_str}</td>"
-                    else:
-                        factor_cell = ""
-                        alpha_cell = ""
-                    
-                    loading = item['요인적재량']
-                    loading_color = '#22c55e' if loading >= 0.7 else '#f59e0b' if loading >= 0.5 else '#94a3b8'
-                    
-                    html_cfa += f"""
-                    <tr>
-                        {factor_cell}
-                        <td>{item['문항']}</td>
-                        <td style="color:{loading_color}; font-weight:600;">{loading:.3f}</td>
-                        {alpha_cell}
-                    </tr>
-                    """
-                
-                html_cfa += "</table>"
-                st.markdown(html_cfa, unsafe_allow_html=True)
+                st.dataframe(cfa_df, use_container_width=True, hide_index=True)
                 
                 # 적합도 지수
                 st.markdown("#### 모형 적합도 지수")
@@ -1193,21 +1101,9 @@ def main():
                         
                         with col1:
                             st.markdown("**주요 키워드**")
-                            # 키워드 태그 스타일
-                            keywords_html = "<div style='display:flex; flex-wrap:wrap; gap:6px;'>"
-                            for word, weight in topic['keywords']:
-                                opacity = min(1.0, 0.4 + weight / 10)
-                                keywords_html += f"""
-                                <span style='
-                                    background: rgba(30,58,95,{opacity});
-                                    color: white;
-                                    padding: 4px 10px;
-                                    border-radius: 15px;
-                                    font-size: 13px;
-                                '>{word}</span>
-                                """
-                            keywords_html += "</div>"
-                            st.markdown(keywords_html, unsafe_allow_html=True)
+                            # 키워드를 텍스트로 표시
+                            keyword_text = " · ".join([word for word, weight in topic['keywords']])
+                            st.write(keyword_text)
                             
                             st.markdown(f"**문서 수**: {topic['document_count']}개")
                         
