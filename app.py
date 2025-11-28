@@ -612,7 +612,7 @@ def main():
                 sheet_url = st.text_input(
                     "구글 시트 URL",
                     #value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU/edit?gid=1128262928#gid=1128262928" #데모 더미데이터
-                    value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU" # 구글폼 연동탭
+                    value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU/edit#gid=628753763" # 구글폼 연동탭
                 )
                 st.caption("시트는 '링크가 있는 모든 사용자'에게 공개되어야 합니다.")
             else:
