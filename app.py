@@ -589,35 +589,40 @@ def main():
     </div>
     """, unsafe_allow_html=True)
     
-    # 사이드바 - 데이터 소스 설정
-    with st.sidebar:
-        st.markdown("### ⚙️ 설정")
+    # 데이터 소스 설정 - 메인 화면 expander로 이동
+    with st.expander("⚙️ 데이터 소스 설정", expanded=False):
+        col_setting1, col_setting2 = st.columns([1, 2])
         
-        data_source = st.radio(
-            "데이터 소스",
-            ["데모 데이터", "구글 시트 연결"],
-            index=0
-        )
-        
-        if data_source == "구글 시트 연결":
-            sheet_url = st.text_input(
-                "구글 시트 URL",
-                value="https://docs.google.com/spreadsheets/u/0/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU"
-                #placeholder="https://docs.google.com/spreadsheets/d/..."
+        with col_setting1:
+            data_source = st.radio(
+                "데이터 소스",
+                ["데모 데이터", "구글 시트 연결"],
+                index=1  # 기본값: 구글 시트 연결
             )
-            st.caption("시트는 '링크가 있는 모든 사용자'에게 공개되어야 합니다.")
-            
-            st.markdown("---")
-            st.markdown("**컬럼 매핑**")
-            st.caption("시트의 컬럼명이 다른 경우 매핑하세요")
-            
+        
+        with col_setting2:
+            if data_source == "구글 시트 연결":
+                sheet_url = st.text_input(
+                    "구글 시트 URL",
+                    value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU"
+                )
+                st.caption("시트는 '링크가 있는 모든 사용자'에게 공개되어야 합니다.")
+            else:
+                sheet_url = None
+        
+        # 컬럼 매핑 (구글 시트 선택 시)
+        if data_source == "구글 시트 연결":
+            st.markdown("**컬럼 매핑** (시트의 컬럼명이 다른 경우)")
             col_mapping = {}
+            mapping_cols = st.columns(6)
             expected_cols = ['Q1', 'Q2', 'Q3', 'Q4', 'Q5', 'Q6', 'Q7', 'gender', 'age', 'semester', 'Q11']
             
-            for col in expected_cols:
-                col_mapping[col] = st.text_input(f"{col}", value=col, key=f"map_{col}")
+            for i, col in enumerate(expected_cols):
+                with mapping_cols[i % 6]:
+                    col_mapping[col] = st.text_input(f"{col}", value=col, key=f"map_{col}")
+        else:
+            col_mapping = {}
         
-        st.markdown("---")
         auto_refresh = st.checkbox("자동 새로고침 (30초)", value=True)
         
         if auto_refresh:
@@ -631,7 +636,7 @@ def main():
     
     # 데이터 로드
     if data_source == "데모 데이터":
-        df = generate_demo_data(100)  # 분석에 충분한 표본 크기
+        df = generate_demo_data(100)
     else:
         if sheet_url:
             df = load_data_from_sheet(sheet_url)
@@ -639,7 +644,7 @@ def main():
                 # 컬럼 매핑 적용
                 df = df.rename(columns={v: k for k, v in col_mapping.items() if v != k})
         else:
-            st.info("👆 사이드바에서 구글 시트 URL을 입력하세요")
+            st.info("👆 위 설정에서 구글 시트 URL을 입력하세요")
             df = generate_demo_data(100)
     
     if df is None:
