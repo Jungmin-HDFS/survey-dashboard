@@ -221,16 +221,23 @@ def load_data_from_sheet(sheet_url: str) -> pd.DataFrame:
     """구글 시트에서 데이터 로드 (공개 시트용)"""
     try:
         # 구글 시트 URL을 CSV export URL로 변환
-        if '/edit' in sheet_url:
-            csv_url = sheet_url.replace('/edit#gid=', '/export?format=csv&gid=')
-            csv_url = csv_url.replace('/edit?usp=sharing', '/export?format=csv')
-        elif 'spreadsheets/d/' in sheet_url:
-            sheet_id = sheet_url.split('/d/')[1].split('/')[0]
-            csv_url = f'https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv'
-        else:
-            csv_url = sheet_url
+        import re
         
-        df = pd.read_csv(csv_url)
+        # sheet_id 추출
+        sheet_id_match = re.search(r'/d/([a-zA-Z0-9_-]+)', sheet_url)
+        if not sheet_id_match:
+            st.error("유효한 구글 시트 URL이 아닙니다.")
+            return None
+        sheet_id = sheet_id_match.group(1)
+        
+        # gid 추출 (있으면)
+        gid_match = re.search(r'gid=(\d+)', sheet_url)
+        gid = gid_match.group(1) if gid_match else '0'
+        
+        csv_url = f'https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}'
+        
+        # on_bad_lines='skip'으로 파싱 에러 행 건너뛰기
+        df = pd.read_csv(csv_url, on_bad_lines='skip')
         return df
     except Exception as e:
         st.error(f"데이터 로드 실패: {e}")
