@@ -604,7 +604,8 @@ def main():
             if data_source == "구글 시트 연결":
                 sheet_url = st.text_input(
                     "구글 시트 URL",
-                    value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU"
+                    value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU/edit?gid=1128262928#gid=1128262928"
+                    #value="https://docs.google.com/spreadsheets/d/1D9WSEOpED13_NyFbhVbRye-Y70tpUEUDggma2_kxhNU"
                 )
                 st.caption("시트는 '링크가 있는 모든 사용자'에게 공개되어야 합니다.")
             else:
