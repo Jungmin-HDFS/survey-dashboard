@@ -43,7 +43,7 @@ st.set_page_config(
     page_title="청년 특강 설문조사 대시보드",
     page_icon="📊",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="expanded"
 )
 
 # ============================================================
